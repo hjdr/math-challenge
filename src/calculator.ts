@@ -1,7 +1,6 @@
 
 export default function calculator(expression: string) {
   let tokens: Array<string> = expression.split('')
-  let result = 0
   let loopBreaker = 0
 
   enum TokenType {
@@ -17,28 +16,30 @@ export default function calculator(expression: string) {
   }
 
   function addition() {
-    for (const [index, token] of tokens.entries()) {
-      const previousToken = Number(tokens[index - 1]);
-      const nextToken = Number(tokens[index + 1]);
-
-      if (tokens.includes(TokenType.Multiply)) {
-        multiply();
-        break
-      } else if (token === TokenType.Plus) {
-        const sum = previousToken + nextToken
-        tokens.splice(0, index + 2, String(sum))
-        break;
-      }
+    if (tokens.includes(TokenType.Multiply)) {
+      multiply();
+      return;
     }
+    executeExpression(TokenType.Plus);
   }
 
   function multiply(){
+    executeExpression(TokenType.Multiply);
+  }
+
+  function executeExpression(tokenType: string) {
     for (const [index, token] of tokens.entries()) {
       const previousToken = Number(tokens[index - 1]);
       const nextToken = Number(tokens[index + 1]);
-      if (token === TokenType.Multiply) {
+      if (token === TokenType.Plus && tokenType === TokenType.Plus) {
+        const sum = previousToken + nextToken
+        tokens.splice(index -1, 3, String(sum))
+        break;
+      }
+      if (token === TokenType.Multiply && tokenType === TokenType.Multiply) {
         const sum = previousToken * nextToken
         tokens.splice(index -1, 3, String(sum))
+        break;
       }
     }
   }
