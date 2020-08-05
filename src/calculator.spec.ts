@@ -74,4 +74,28 @@ describe('calculator()', () => {
       expect(calculator('8+8*8+8*8+8+8')).toBe(152)
     });
   });
+
+  describe('WHEN given an expression multiple *, + and - operators', () => {
+    it('SHOULD return the result of the expression', () => {
+      expect(calculator('16+44*2-9*3')).toBe(77)
+    });
+  });
+
+  describe('WHEN given an expression multiple / operators', () => {
+    it('SHOULD return the result of the expression', () => {
+      expect(calculator('16/2/2')).toBe(4)
+    });
+  });
+
+  describe('WHEN given an expression multiple *, +, / and - operators', () => {
+    it('SHOULD return the result of the expression', () => {
+      expect(calculator('100/10+1*3-13')).toBe(0)
+    });
+  });
+
+  describe('WHEN given an expression with ( and ) operators', () => {
+    it('SHOULD return the result of the expression', () => {
+      expect(calculator('4*10+(3-1)')).toBe(42)
+    });
+  });
 });
