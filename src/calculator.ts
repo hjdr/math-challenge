@@ -1,7 +1,7 @@
 
 export default function calculator(expression: string) {
-  let tokens: Array<string> = expression.split(/([-+*/()])/).filter(value => value !== '');
-  console.log(tokens)
+  const EXPRESSION_LENGTH = 3;
+  let tokens: Array<string> = expression.split(/([-+*/()])/).filter(Boolean)
   let loopBreaker = 0
 
   enum OperatorType {
@@ -13,32 +13,24 @@ export default function calculator(expression: string) {
     RightParentheses = ')',
   }
 
-  function evaluateTokens(tokens: Array<string>) {
-    while (tokens.length > 1 && loopBreaker < 30) {
-      console.log('start', tokens)
-      scanTokens(tokens);
-      loopBreaker += 1;
-      // console.log('finish', tokens)
-    }
-  }
-
-  function add(tokens: Array<string>) {
-    if (tokens.some(token => {
-      // create check higher priority
-      return token === OperatorType.Divide || token === OperatorType.Multiply;
-    })) return divideOrMultiply(tokens);
-    executeExpression(OperatorType.Plus, tokens);
-  }
-
-  function divide(tokens: Array<string>) {
-    if (tokens.includes(OperatorType.LeftParentheses)) return group(tokens);
-    executeExpression(OperatorType.Divide, tokens);
+  function addOrSubtract(tokens: Array<string>) {
+    const operator = getFirstOccurringOperator(OperatorType.Plus, OperatorType.Minus, tokens);
+    if (operator === OperatorType.Plus) return executeExpression(OperatorType.Plus, tokens);
+    return executeExpression(OperatorType.Minus, tokens);
   }
 
   function divideOrMultiply(tokens: Array<string>) {
     const operator = getFirstOccurringOperator(OperatorType.Divide, OperatorType.Multiply, tokens);
-    if (operator === OperatorType.Divide) return divide(tokens);
-    return multiply(tokens);
+    if (operator === OperatorType.Divide) return executeExpression(OperatorType.Divide, tokens);
+    return executeExpression(OperatorType.Multiply, tokens);
+  }
+
+  function evaluateTokens(tokens: Array<string>) {
+    while (tokens.length > 1 && loopBreaker < 30) {
+      // console.log('start', tokens)
+      scanTokens(tokens);
+      loopBreaker += 1;
+    }
   }
 
   function execute(leftOperand: number, operator: string, rightOperand: number) {
@@ -55,7 +47,7 @@ export default function calculator(expression: string) {
 
       if (token === operator) {
         const sum = execute(leftOperand, operator, rightOperand);
-        tokens.splice(index -1, 3, String(sum));
+        tokens.splice(index -1, EXPRESSION_LENGTH, String(sum));
         break;
       }
     }
@@ -64,79 +56,36 @@ export default function calculator(expression: string) {
   function getFirstOccurringOperator(
     firstOperator: string,
     secondOperator: string,
-    tokens: Array<string>
+    tokens: Array<string>,
   ) {
     const firstOperatorIndex = tokens.indexOf(firstOperator);
     const secondOperatorIndex = tokens.indexOf(secondOperator);
-    if (firstOperatorIndex === -1 || firstOperatorIndex < secondOperatorIndex) return secondOperator;
+    if (firstOperatorIndex === -1
+      || (firstOperatorIndex > secondOperatorIndex && secondOperatorIndex !== - 1)
+    ) return secondOperator;
     return firstOperator;
   }
 
   function group(tokens: Array<string>) {
-    // console.log('groupTokes', tokens)
-    const leftParenthesesIndex = tokens.indexOf(OperatorType.LeftParentheses);
-    const rightParenthesesIndex = tokens.indexOf(OperatorType.RightParentheses);
-    // console.log(leftParenthesesIndex)
-    // console.log(rightParenthesesIndex)
-
-    const isNestedGroup = tokens.slice(rightParenthesesIndex + 1)
-      .indexOf(OperatorType.RightParentheses) !== 1
-
-
-    if (isNestedGroup) {
-      const innerMostLeftParenthesesIndex = tokens.lastIndexOf(OperatorType.LeftParentheses);
-      const nestedGroup = tokens.slice(innerMostLeftParenthesesIndex + 1, rightParenthesesIndex);
-      // console.log('group', group)
-      // console.log('nestedGroup', nestedGroup)
-      const nestedGroupLength = rightParenthesesIndex - innerMostLeftParenthesesIndex;
-      evaluateTokens(nestedGroup);
-      tokens.splice(innerMostLeftParenthesesIndex, nestedGroupLength + 1, String(nestedGroup));
-      // console.log('toks', tokens)
-    } else {
-      // console.log('else')
-      const group = tokens.slice(leftParenthesesIndex + 1, rightParenthesesIndex);
-      const groupLength = rightParenthesesIndex - leftParenthesesIndex;
-      evaluateTokens(group);
-      tokens.splice(leftParenthesesIndex, groupLength + 1, String(group));
-    }
-  }
-
-  function multiply(tokens: Array<string>){
-    if (tokens.includes(OperatorType.LeftParentheses)) return group(tokens);
-    executeExpression(OperatorType.Multiply, tokens);
+    const leftParenthesesIndex = tokens.lastIndexOf(OperatorType.LeftParentheses);
+    const rightParenthesesIndex = tokens.indexOf(OperatorType.RightParentheses, leftParenthesesIndex);
+    const group = tokens.slice(leftParenthesesIndex + 1, rightParenthesesIndex);
+    const groupLength = rightParenthesesIndex - leftParenthesesIndex;
+    evaluateTokens(group);
+    tokens.splice(leftParenthesesIndex, groupLength + 1, String(group));
   }
 
   function scanTokens(tokens: Array<string>){
-    for (const token of tokens) {
-      if (token === OperatorType.Minus) {
-        subtract(tokens);
-        break;
-      }
-      if (token === OperatorType.Plus) {
-        add(tokens);
-        break;
-      }
-      if (token === OperatorType.Multiply) {
-        multiply(tokens);
-        break;
-      }
-      if (token === OperatorType.Divide) {
-        divide(tokens);
-        break;
-      }
-      if (token === OperatorType.LeftParentheses) {
-        group(tokens);
-        break;
-      }
-    }
+    const hasGroup = tokens.some(token => token === OperatorType.LeftParentheses);
+    if (hasGroup) return group(tokens);
+    const hasDivideOrMultiply = tokens
+      .some(token => token === OperatorType.Divide || token === OperatorType.Multiply);
+    if (hasDivideOrMultiply) return divideOrMultiply(tokens);
+    const hasAddOrSubtract = tokens
+      .some(token => token === OperatorType.Plus || token === OperatorType.Minus);
+    if (hasAddOrSubtract) return addOrSubtract(tokens);
   }
 
-  function subtract(tokens: Array<string>) {
-    if (tokens.some(token => {
-      return token === OperatorType.Divide || token === OperatorType.Multiply;
-    })) return divideOrMultiply(tokens);
-    executeExpression(OperatorType.Minus, tokens);
-  }
   evaluateTokens(tokens);
   return Number(tokens[0]);
 }
