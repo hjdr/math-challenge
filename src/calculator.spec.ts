@@ -125,6 +125,9 @@ describe('calculator()', () => {
       expect(calculator('4+10+(3+(1*8))')).toBe(25)
     });
     it('SHOULD return the result of the expression', () => {
+      expect(calculator('4+10+(3+(1*(2*8)))')).toBe(33)
+    });
+    it('SHOULD return the result of the expression', () => {
       expect(calculator('(10-8)+4+10+(3+(1*8))')).toBe(27)
     });
   });
