@@ -33,17 +33,15 @@ export default function calculator(expression: string) {
     tokens.splice(operatorIndex -1, EXPRESSION_LENGTH, String(result));
   }
 
-  function getFirstOperatorIndex(
-    operatorTypeX: string,
-    operatorTypeY: string,
-    tokens: Array<string>,
-  ): number {
-    const operatorTypeXIndex = tokens.indexOf(operatorTypeX);
-    const operatorTypeYIndex = tokens.indexOf(operatorTypeY);
-    if (operatorTypeXIndex === -1
-      || (operatorTypeXIndex > operatorTypeYIndex && operatorTypeYIndex !== - 1)
-    ) return operatorTypeYIndex;
-    return operatorTypeXIndex;
+  function getFirstTokenIndex(operatorTypeX: string, operatorTypeY: string, tokens: Array<string>) {
+    let tokenIndex: undefined | number = undefined;
+    for (const [index, token] of tokens.entries()) {
+      if (token === operatorTypeX || token === operatorTypeY) {
+        tokenIndex = index
+        break;
+      }
+    }
+    return tokenIndex;
   }
 
   function group(tokens: Array<string>) {
@@ -58,17 +56,13 @@ export default function calculator(expression: string) {
   function scanTokens(tokens: Array<string>){
     const hasLeftParenthesesToken = tokens.some(token => token === OperatorType.LeftParentheses);
     if (hasLeftParenthesesToken) return group(tokens);
-    const hasDivideOrMultiplyToken = tokens
-      .some(token => token === OperatorType.Divide || token === OperatorType.Multiply);
-    if (hasDivideOrMultiplyToken) {
-      const operatorIndex = getFirstOperatorIndex(OperatorType.Divide, OperatorType.Multiply, tokens);
-      return executeExpression(operatorIndex, tokens);
+    const divideOrMultiplyTokenIndex = getFirstTokenIndex(OperatorType.Divide, OperatorType.Multiply, tokens)
+    if (divideOrMultiplyTokenIndex) {
+      return executeExpression(divideOrMultiplyTokenIndex, tokens);
     }
-    const hasPlusOrMinusToken = tokens
-      .some(token => token === OperatorType.Minus || token === OperatorType.Plus);
-    if (hasPlusOrMinusToken) {
-      const operatorIndex = getFirstOperatorIndex(OperatorType.Minus, OperatorType.Plus, tokens);
-      return executeExpression(operatorIndex, tokens);
+    const plusOrMinusTokenIndex = getFirstTokenIndex(OperatorType.Minus, OperatorType.Plus, tokens)
+    if (plusOrMinusTokenIndex) {
+      return executeExpression(plusOrMinusTokenIndex, tokens);
     }
   }
 
