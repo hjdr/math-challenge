@@ -1,7 +1,6 @@
 export default function calculator(expression: string) {
   const EXPRESSION_LENGTH = 3;
   let tokens: Array<string> = expression.split(/([-+*/()])/).filter(Boolean);
-  let loopBreaker = 0
 
   enum OperatorType {
     Divide = '/',
@@ -13,9 +12,8 @@ export default function calculator(expression: string) {
   }
 
   function evaluateTokens(tokens: Array<string>) {
-    while (tokens.length > 1 && loopBreaker < 30) {
+    while (tokens.length > 1) {
       scanTokens(tokens);
-      loopBreaker += 1;
     }
   }
 
@@ -34,14 +32,10 @@ export default function calculator(expression: string) {
   }
 
   function getFirstTokenIndex(operatorTypeX: string, operatorTypeY: string, tokens: Array<string>) {
-    let tokenIndex: undefined | number = undefined;
-    for (const [index, token] of tokens.entries()) {
-      if (token === operatorTypeX || token === operatorTypeY) {
-        tokenIndex = index
-        break;
-      }
-    }
-    return tokenIndex;
+    const tokensWithIndex = tokens.map((token, index) => {
+      return {token: token, index: index}
+    }).filter(({ token }) => token === operatorTypeX || token === operatorTypeY)
+    return tokensWithIndex.length !== 0 ? tokensWithIndex[0].index : undefined;
   }
 
   function group(tokens: Array<string>) {
@@ -57,13 +51,9 @@ export default function calculator(expression: string) {
     const hasLeftParenthesesToken = tokens.some(token => token === OperatorType.LeftParentheses);
     if (hasLeftParenthesesToken) return group(tokens);
     const divideOrMultiplyTokenIndex = getFirstTokenIndex(OperatorType.Divide, OperatorType.Multiply, tokens)
-    if (divideOrMultiplyTokenIndex) {
-      return executeExpression(divideOrMultiplyTokenIndex, tokens);
-    }
+    if (divideOrMultiplyTokenIndex) return executeExpression(divideOrMultiplyTokenIndex, tokens);
     const plusOrMinusTokenIndex = getFirstTokenIndex(OperatorType.Minus, OperatorType.Plus, tokens)
-    if (plusOrMinusTokenIndex) {
-      return executeExpression(plusOrMinusTokenIndex, tokens);
-    }
+    if (plusOrMinusTokenIndex) return executeExpression(plusOrMinusTokenIndex, tokens);
   }
 
   evaluateTokens(tokens);
