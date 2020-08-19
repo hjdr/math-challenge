@@ -34,7 +34,7 @@ export default function calculator(expression: string) {
   function getFirstTokenIndex(operatorTypeX: string, operatorTypeY: string, tokens: Array<string>) {
     const tokensWithIndex = tokens.map((token, index) => {
       return {token: token, index: index}
-    }).filter(({ token }) => token === operatorTypeX || token === operatorTypeY)
+    }).filter(({ token }) => token === operatorTypeX || token === operatorTypeY);
     return tokensWithIndex.length !== 0 ? tokensWithIndex[0].index : undefined;
   }
 
@@ -50,9 +50,9 @@ export default function calculator(expression: string) {
   function scanTokens(tokens: Array<string>){
     const hasLeftParenthesesToken = tokens.some(token => token === OperatorType.LeftParentheses);
     if (hasLeftParenthesesToken) return group(tokens);
-    const divideOrMultiplyTokenIndex = getFirstTokenIndex(OperatorType.Divide, OperatorType.Multiply, tokens)
+    const divideOrMultiplyTokenIndex = getFirstTokenIndex(OperatorType.Divide, OperatorType.Multiply, tokens);
     if (divideOrMultiplyTokenIndex) return executeExpression(divideOrMultiplyTokenIndex, tokens);
-    const plusOrMinusTokenIndex = getFirstTokenIndex(OperatorType.Minus, OperatorType.Plus, tokens)
+    const plusOrMinusTokenIndex = getFirstTokenIndex(OperatorType.Minus, OperatorType.Plus, tokens);
     if (plusOrMinusTokenIndex) return executeExpression(plusOrMinusTokenIndex, tokens);
   }
 
